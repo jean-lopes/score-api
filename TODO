@@ -1,0 +1,16 @@
+service on port 5000
+create env file
+API key (service-token)
+add logging
+add integration testing
+add unit testing
+add postgres support
+Score.cpf -> protected
+Score.cpf -> add mod11 calc
+Score.cpf -> encryp/decrypt on database
+GET scores/{cpf} ?? should be a post?
+openapi
+limpar build.fsx
+review README
+router 404
+connection pool
