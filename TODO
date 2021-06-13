@@ -8,9 +8,17 @@ add postgres support
 Score.cpf -> protected
 Score.cpf -> add mod11 calc
 Score.cpf -> encryp/decrypt on database
-GET scores/{cpf} ?? should be a post?
+GET scores/{cpf}... should be a post?
 openapi
 limpar build.fsx
 review README
 router 404
 connection pool
+make `GET /abc` return 404 with requestId (same as `GET /score`)
+
+# Questions
+DI?
+# Opinions
+forward declarations
+records,classes,modules case
+documentation is lacking

@@ -2,17 +2,29 @@ namespace Application.Configurations
 
 open System.IO
 open Commons.Extensions
-open Application.Configurations.VariableNames
 open System
 
 [<AutoOpen>]
-module Configuration =
+module Configurations =
+    type Database =
+        { Host: string
+          Port: int
+          User: string
+          Password: string
+          Name: string }
+
+    type Score = { Min: int; Max: int }
+
     type Service =
         { Port: int
           Secret: string
-          Key: string }
+          Key: string
+          UnauthorizedAsNotFound: bool
+          Score: Score }
 
-    type Configuration = { Service: Service }
+    type Configuration =
+        { Service: Service
+          Database: Database }
 
     let private strVarToTuple (s: string) =
         match s.Split("=") with
@@ -37,7 +49,7 @@ module Configuration =
         | value -> Some(name, value)
 
     let private loadEnvs =
-        variableNamesAsSeq
+        VariableNames.asSeq
         |> Seq.choose getEnv
         |> Map.ofSeq
 
@@ -47,31 +59,49 @@ module Configuration =
         let fromFiles = loadFromFiles paths
         Map.merge fromFiles fromEnv
 
-    let private getStrFromMap name (map: Map<string, string>) =
+    let private getStrFromMap name (map: Map<string, string>) : string =
         Map.tryFind name map
         |> fun x ->
             match x with
             | Some value -> value
             | None -> failwithf "Expected variable `%s`" name
 
-    let private getIntFromMap name map =
+    let private getIntFromMap name map : int =
         getStrFromMap name map
         |> fun s ->
             match Int32.TryParse s with
             | true, n -> n
             | _ -> failwithf "Expected variable `%s` to be an int, found: `%s`" name s
 
+    let private getBoolFromMap name map : bool =
+        getStrFromMap name map
+        |> fun s ->
+            match bool.TryParse s with
+            | true, value -> value
+            | _ -> failwithf "Expected variable `%s` to be a bool, found: `%s`" name s
+
     /// Load variables from files and system environment.
     ///
     /// Load order: paths (by sequence order), then Environment Variables
     ///
     /// Last read value is kept as the current value
-    let buildFromPathAndEnv paths =
+    let buildFromFilesAndEnv paths =
         let envs = loadFromFilesAndEnv paths
         let getStr name = getStrFromMap name envs
         let getInt name = getIntFromMap name envs
+        let getBool name = getBoolFromMap name envs
 
         { Service =
-              { Port = getInt Service.port
-                Secret = getStr Service.secret
-                Key = getStr Service.key } }
+              { Port = getInt VariableNames.Service.port
+                Secret = getStr VariableNames.Service.secret
+                Key = getStr VariableNames.Service.key
+                UnauthorizedAsNotFound = getBool VariableNames.Service.unauthorizedAsNotFound
+                Score =
+                    { Min = getInt VariableNames.Service.minScore
+                      Max = getInt VariableNames.Service.maxScore } }
+          Database =
+              { Host = getStr VariableNames.Database.host
+                Port = getInt VariableNames.Database.port
+                User = getStr VariableNames.Database.user
+                Password = getStr VariableNames.Database.password
+                Name = getStr VariableNames.Database.name } }

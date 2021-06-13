@@ -3,23 +3,18 @@ module Application.Server
 open Saturn
 open Application.Api.Routers
 open Application.Configurations
-open Application.Api.Authorization
+open Application.Api
 open Application.Api.Entities.Error
-
-let apiPipeline cfg =
-    pipeline {
-        plug acceptJson
-        plug requestId
-        plug (requiresAuthorization cfg.Service.Secret)
-    }
 
 let app (cfg: Configuration) =
     let serverUrl =
         sprintf "http://0.0.0.0:%d" cfg.Service.Port
 
     application {
-        pipe_through (apiPipeline cfg)
+        pipe_through (Pipelines.api cfg)
+
         error_handler (fun ex _ -> pipeline { json { message = ex.Message } })
+
         use_router (appRouter cfg)
         url serverUrl
         use_config (fun _ -> cfg)
@@ -36,7 +31,7 @@ let main _ =
         }
 
     printfn "Loading configuration"
-    let cfg = buildFromPathAndEnv paths
+    let cfg = buildFromFilesAndEnv paths
 
     printfn "Starting server"
     run (app cfg)

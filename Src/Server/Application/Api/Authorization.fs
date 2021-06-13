@@ -1,22 +1,22 @@
 module Application.Api.Authorization
 
 open Giraffe.Core
-open Giraffe.ResponseWriters
 open Microsoft.AspNetCore.Http
-open System.Threading.Tasks
-open Application.Api.Entities.Error
+open Application.Configurations
+open Application.Api
 
-let private unauthorized =
-    fun (ctx: HttpContext) ->
-        ctx.SetStatusCode(401)
-        ctx.WriteJsonAsync { message = "Unauthorized" }
+let requiresAuthorization cfg (value: string) : HttpHandler =
+    let statusCode =
+        if cfg.Service.UnauthorizedAsNotFound then
+            404
+        else
+            401
 
-let requiresAuthorization (value: string) : HttpHandler =
     fun nxt (ctx: HttpContext) ->
         match ctx.Request.Headers.TryGetValue "Authorization" with
-        | false, _ -> unauthorized ctx
+        | false, _ -> Handlers.empty statusCode ctx
         | true, v ->
             if v.Equals(value) then
                 nxt ctx
             else
-                unauthorized ctx
+                Handlers.empty statusCode ctx
