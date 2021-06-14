@@ -5,4 +5,4 @@ open System.Threading.Tasks
 
 type IScoreRepository =
     abstract insert : score: Score -> Task<Result<int, exn>>
-    abstract findByCpf : cpf: string -> Task<Result<Score option, exn>>
+    abstract findByCpf : cpf: CPF -> Task<Result<Score option, exn>>

@@ -9,7 +9,7 @@ open FSharp.Control.Tasks.ContextInsensitive
 module ScoreRepositories =
 
     type InMemoryScoreRepository() =
-        let mutable scores : Map<string, Score> = Map.empty
+        let mutable scores : Map<CPF, Score> = Map.empty
 
         interface IScoreRepository with
             member _.insert(score: Score) : Task<Result<int, exn>> =
@@ -18,10 +18,4 @@ module ScoreRepositories =
                     return (Ok 1)
                 }
 
-            member _.findByCpf(cpf: string) : Task<Result<Score option, exn>> =
-                task {
-                    return
-                        match scores.TryFind cpf with
-                        | Some s -> Ok(Some s)
-                        | None -> Ok None
-                }
+            member _.findByCpf(cpf: CPF) : Task<Result<Score option, exn>> = task { return Ok(scores.TryFind cpf) }

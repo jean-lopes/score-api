@@ -16,10 +16,10 @@ router 404
 connection pool
 make `GET /abc` return 404 with requestId (same as `GET /score`)
 
-create dto to return only desired fields
-│ GET localhost:5000/score/<cpf>, returns [{"score": 42, "created_at": "<TODAY>"}]
 
 get not found returning null
+
+snake_case json
 
 
 service should throw custom exception to be handled as 400 on controller

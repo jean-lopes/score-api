@@ -1,12 +1,14 @@
 namespace Domain.Entities
 
-[<AutoOpen>]
-module Score =
-    open System
+open System
 
-    [<CLIMutable>]
-    type Score =
-        { Id: Guid
-          Cpf: string
-          Value: int
-          CreatedAt: DateTime }
+[<AutoOpen>]
+module Aliases =
+    type CPF = uint64
+
+[<CLIMutable>]
+type Score =
+    { Id: Guid
+      Cpf: CPF
+      Value: int
+      CreatedAt: DateTime }

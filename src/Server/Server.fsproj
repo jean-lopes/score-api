@@ -7,14 +7,14 @@
     <Compile Include="Commons/Extensions.fs" />
     <Compile Include="Domain/Errors.fs" />
     <Compile Include="Domain/Entities.fs" />
-    <Compile Include="Domain/Validators.fs" />
+    <Compile Include="Domain/Helpers.fs" />
     <Compile Include="Domain/Repositories.fs" />
     <Compile Include="Domain/Services.fs" />
     <Compile Include="Resources/Repositories.fs" />
     <Compile Include="Resources/Services.fs" />
     <Compile Include="Application/Configurations/VariableNames.fs" />
     <Compile Include="Application/Configurations/Configurations.fs" />
-    <Compile Include="Application/Api/Entities.fs" />
+    <Compile Include="Application/Api/Dtos.fs" />
     <Compile Include="Application/Api/Handlers.fs" />
     <Compile Include="Application/Api/Authorization.fs" />
     <Compile Include="Application/Api/Pipelines.fs" />

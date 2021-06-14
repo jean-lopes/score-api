@@ -3,25 +3,22 @@ namespace Domain.Services
 open System
 open System.Threading.Tasks
 open FSharp.Control.Tasks.ContextInsensitive
-open Domain.Entities.Score
-open Domain.Validators
+open Domain.Entities
+open Domain.Helpers
 open Domain.Repositories
 
-
 type IScoreProvider =
-    abstract score : cpf: string -> int
+    abstract score : cpf: CPF -> int
 
 type ScoreService(scoreProvider: IScoreProvider, repository: IScoreRepository) =
-    member _.create(cpf: string) : Task<Result<Score, exn>> =
+    member _.create(rawCpf: string) : Task<Result<Score, exn>> =
         task {
-            let c = cpf.Trim()
-
-            match Cpf.validate c with
-            | Some err -> return Error(invalidArg "cpf" err)
-            | None ->
+            match Cpf.tryParse rawCpf with
+            | Error err -> return Error(invalidArg "cpf" err)
+            | Ok cpf ->
                 let score =
                     { Id = Guid.NewGuid()
-                      Cpf = c
+                      Cpf = cpf
                       Value = scoreProvider.score cpf
                       CreatedAt = DateTime.UtcNow }
 
@@ -30,11 +27,9 @@ type ScoreService(scoreProvider: IScoreProvider, repository: IScoreRepository) =
                 return Ok score
         }
 
-    member _.getByCpf(cpf: string) : Task<Result<Score option, exn>> =
+    member _.getByCpf(rawCpf: string) : Task<Result<Score option, exn>> =
         task {
-            let c = cpf.Trim()
-
-            match Cpf.validate c with
-            | Some err -> return Error(invalidArg "cpf" err)
-            | None -> return! repository.findByCpf c
+            match Cpf.tryParse rawCpf with
+            | Error err -> return Error(invalidArg "cpf" err)
+            | Ok cpf -> return! repository.findByCpf cpf
         }
