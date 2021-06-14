@@ -16,11 +16,21 @@ router 404
 connection pool
 make `GET /abc` return 404 with requestId (same as `GET /score`)
 
+create dto to return only desired fields
+│ GET localhost:5000/score/<cpf>, returns [{"score": 42, "created_at": "<TODAY>"}]
+
+get not found returning null
+
+
 service should throw custom exception to be handled as 400 on controller
 change json serialization library
 
+
 # Questions
 DI?
+tasks:
+- context insensitive
+- let, let!, do, do!, return, return!
 # Opinions
 forward declarations
 records,classes,modules case

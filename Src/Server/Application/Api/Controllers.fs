@@ -13,20 +13,24 @@ module ScoresController =
         task {
             let service = ctx.GetService<ScoreService>()
 
-            match service.getByCpf cpf with
+            let! result = service.getByCpf cpf
+
+            match result with
             | Ok (Some score) -> return! Response.ok ctx score
             | Ok None -> return! Response.notFound ctx ()
             | Error ex -> return raise ex
         }
 
-    let createAction (ctx: HttpContext) : Task<HttpContext option> =
+    let createAction (ctx: HttpContext) =
         task {
             let service = ctx.GetService<ScoreService>()
 
             let! body = Controller.getJson<Requests.Score> ctx
 
-            match service.create body.cpf with
-            | Ok score -> return! Response.created ctx score
+            let! result = service.create body.cpf
+
+            match result with
+            | Ok score -> return Response.created ctx score
             | Error ex -> return raise ex
         }
 

@@ -11,5 +11,5 @@ module Cpf =
 
         match cpf with
         | _ when cpf.Length <> 11 -> invalid "Invalid length. Expected 11"
-        | s when isDigitOnly s -> invalid "CPF should contain only numbers"
+        | s when isDigitOnly s |> not -> invalid "CPF should contain only numbers"
         | _ -> None

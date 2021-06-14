@@ -6,6 +6,7 @@ open Application.Configurations
 open Application.Api
 open Microsoft.Extensions.DependencyInjection
 open Domain.Services
+open Resources.Repositories
 open Resources.Services
 
 let configureServices (cfg: Configuration) (services: IServiceCollection) =
@@ -14,7 +15,10 @@ let configureServices (cfg: Configuration) (services: IServiceCollection) =
     let scoreProvider =
         RandomScoreProvider(Random(), scoreBounds.Min, scoreBounds.Max)
 
-    let scoreService = ScoreService(scoreProvider)
+    let scoreRepository = InMemoryScoreRepository()
+
+    let scoreService =
+        ScoreService(scoreProvider, scoreRepository)
 
     services.AddSingleton<ScoreService>(scoreService)
 
