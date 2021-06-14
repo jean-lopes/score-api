@@ -16,6 +16,9 @@ router 404
 connection pool
 make `GET /abc` return 404 with requestId (same as `GET /score`)
 
+service should throw custom exception to be handled as 400 on controller
+change json serialization library
+
 # Questions
 DI?
 # Opinions

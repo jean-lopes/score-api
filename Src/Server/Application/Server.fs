@@ -1,10 +1,22 @@
 module Application.Server
 
+open System
 open Saturn
-open Application.Api.Routers
 open Application.Configurations
 open Application.Api
-open Application.Api.Entities.Error
+open Microsoft.Extensions.DependencyInjection
+open Domain.Services
+open Resources.Services
+
+let configureServices (cfg: Configuration) (services: IServiceCollection) =
+    let scoreBounds = cfg.Service.ScoreBounds
+
+    let scoreProvider =
+        RandomScoreProvider(Random(), scoreBounds.Min, scoreBounds.Max)
+
+    let scoreService = ScoreService(scoreProvider)
+
+    services.AddSingleton<ScoreService>(scoreService)
 
 let app (cfg: Configuration) =
     let serverUrl =
@@ -12,12 +24,11 @@ let app (cfg: Configuration) =
 
     application {
         pipe_through (Pipelines.api cfg)
-
-        error_handler (fun ex _ -> pipeline { json { message = ex.Message } })
-
-        use_router (appRouter cfg)
+        error_handler Handlers.errorHandler
+        use_router Routers.api
         url serverUrl
         use_config (fun _ -> cfg)
+        service_config (configureServices cfg)
     }
 
 [<EntryPoint>]
@@ -35,5 +46,5 @@ let main _ =
 
     printfn "Starting server"
     run (app cfg)
-    //run app
-    0 // return an integer exit code
+
+    0

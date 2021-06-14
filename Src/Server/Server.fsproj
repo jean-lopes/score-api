@@ -5,15 +5,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Commons/Extensions.fs" />
-    <Compile Include="Domain/Entities/Score.fs" />
+    <Compile Include="Domain/Errors.fs" />
+    <Compile Include="Domain/Entities.fs" />
+    <Compile Include="Domain/Validators.fs" />
+    <Compile Include="Domain/Services.fs" />
+    <Compile Include="Resources/Services.fs" />
     <Compile Include="Application/Configurations/VariableNames.fs" />
     <Compile Include="Application/Configurations/Configurations.fs" />
-    <Compile Include="Application/Api/Entities/Error.fs" />
-    <Compile Include="Application/Api/Entities/Requests.fs" />
+    <Compile Include="Application/Api/Entities.fs" />
     <Compile Include="Application/Api/Handlers.fs" />
     <Compile Include="Application/Api/Authorization.fs" />
     <Compile Include="Application/Api/Pipelines.fs" />
-    <Compile Include="Application/Api/Controllers/ScoresController.fs" />
+    <Compile Include="Application/Api/Controllers.fs" />
     <Compile Include="Application/Api/Routers.fs" />
     <Compile Include="Application/Server.fs" />
   </ItemGroup>

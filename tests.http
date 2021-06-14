@@ -1,0 +1,47 @@
+GET /
+Host: localhost:5000
+Content-Type: application/json
+###
+
+GET /abc
+Host: localhost:5000
+Authorization: abcd1234
+Content-Type: application/json
+
+###
+
+GET /scores
+Host: localhost:5000
+Authorization: abcd1234
+Accept: application/json
+
+###
+
+GET /scores/12
+Host: localhost:5000
+Authorization: abcd1234
+Accept: application/json
+
+###
+
+POST /scores
+Host: localhost:5000
+Authorization: abcd1234
+Accept: application/json
+
+{
+    "cpf": "000.000.000-11"
+}
+
+###
+
+GET /scores/1
+Host: localhost:5000
+Authorization: abcd1
+Accept: application/json
+
+###
+
+GET /scores/1
+Host: localhost:5000
+Accept: application/json

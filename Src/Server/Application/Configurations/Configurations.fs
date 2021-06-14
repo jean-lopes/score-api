@@ -13,14 +13,24 @@ module Configurations =
           Password: string
           Name: string }
 
-    type Score = { Min: int; Max: int }
+    [<Struct>]
+    type ScoreBounds =
+        val Min: int
+        val Max: int
+
+        new(min, max) =
+            { Min = min; Max = max }
+            then
+                if max < min then
+                    failwithf "Invalid score bounds, max < min. Min: %d, Max: %d" min max
+
 
     type Service =
         { Port: int
           Secret: string
           Key: string
           UnauthorizedAsNotFound: bool
-          Score: Score }
+          ScoreBounds: ScoreBounds }
 
     type Configuration =
         { Service: Service
@@ -96,9 +106,14 @@ module Configurations =
                 Secret = getStr VariableNames.Service.secret
                 Key = getStr VariableNames.Service.key
                 UnauthorizedAsNotFound = getBool VariableNames.Service.unauthorizedAsNotFound
-                Score =
-                    { Min = getInt VariableNames.Service.minScore
-                      Max = getInt VariableNames.Service.maxScore } }
+                ScoreBounds =
+                    let min =
+                        getInt VariableNames.Service.minScoreBound
+
+                    let max =
+                        getInt VariableNames.Service.maxScoreBound
+
+                    new ScoreBounds(min, max) }
           Database =
               { Host = getStr VariableNames.Database.host
                 Port = getInt VariableNames.Database.port

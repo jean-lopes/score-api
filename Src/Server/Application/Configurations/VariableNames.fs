@@ -26,8 +26,8 @@ module VariableNames =
         let secret = "SERVICE_SECRET"
         let key = "SERVICE_KEY"
         let unauthorizedAsNotFound = "SERVICE_UNAUTHORIZED_AS_NOT_FOUND"
-        let minScore = "SERVICE_SCORE_MIN"
-        let maxScore = "SERVICE_SCORE_MAX"
+        let minScoreBound = "SERVICE_SCORE_BOUND_MIN"
+        let maxScoreBound = "SERVICE_SCORE_BOUND_MAX"
 
         let asSeq =
             seq {
@@ -35,8 +35,8 @@ module VariableNames =
                 secret
                 key
                 unauthorizedAsNotFound
-                minScore
-                maxScore
+                minScoreBound
+                maxScoreBound
             }
 
     let asSeq = Seq.append Service.asSeq Database.asSeq
