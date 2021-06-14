@@ -1,6 +1,3 @@
-service on port 5000
-create env file
-API key (service-token)
 add logging
 add integration testing
 add unit testing
@@ -8,30 +5,22 @@ add postgres support
 Score.cpf -> protected
 Score.cpf -> add mod11 calc
 Score.cpf -> encryp/decrypt on database
-GET scores/{cpf}... should be a post?
 openapi
 limpar build.fsx
 review README
-router 404
 connection pool
-make `GET /abc` return 404 with requestId (same as `GET /score`)
-
-
-get not found returning null
-
-snake_case json
-
-
+GET /scores/{cpf} not found returning null
 service should throw custom exception to be handled as 400 on controller
-change json serialization library
-
 
 # Questions
+GET scores/{cpf}... should be a post?
 DI?
 tasks:
 - context insensitive
 - let, let!, do, do!, return, return!
+
 # Opinions
-forward declarations
-records,classes,modules case
-documentation is lacking
++ Concurrency
+- forward declarations
+- records,classes,modules case
+- documentation

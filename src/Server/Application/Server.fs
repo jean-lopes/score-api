@@ -8,6 +8,8 @@ open Microsoft.Extensions.DependencyInjection
 open Domain.Services
 open Resources.Repositories
 open Resources.Services
+open Newtonsoft.Json
+open Newtonsoft.Json.Serialization
 
 let configureServices (cfg: Configuration) (services: IServiceCollection) =
     let scoreBounds = cfg.Service.ScoreBounds
@@ -22,6 +24,13 @@ let configureServices (cfg: Configuration) (services: IServiceCollection) =
 
     services.AddSingleton<ScoreService>(scoreService)
 
+let jsonSettings =
+    let settings = JsonSerializerSettings()
+    let resolver = DefaultContractResolver()
+    resolver.NamingStrategy <- SnakeCaseNamingStrategy()
+    settings.ContractResolver <- resolver
+    settings
+
 let app (cfg: Configuration) =
     let serverUrl =
         sprintf "http://0.0.0.0:%d" cfg.Service.Port
@@ -33,6 +42,7 @@ let app (cfg: Configuration) =
         url serverUrl
         use_config (fun _ -> cfg)
         service_config (configureServices cfg)
+        use_json_settings jsonSettings
     }
 
 [<EntryPoint>]

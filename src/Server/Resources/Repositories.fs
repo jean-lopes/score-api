@@ -7,7 +7,6 @@ open FSharp.Control.Tasks.ContextInsensitive
 
 [<AutoOpen>]
 module ScoreRepositories =
-
     type InMemoryScoreRepository() =
         let mutable scores : Map<CPF, Score> = Map.empty
 
