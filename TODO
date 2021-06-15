@@ -1,23 +1,25 @@
-add logging
-add integration testing
-add unit testing
-add postgres support
-Score.cpf -> protected
-Score.cpf -> add mod11 calc
-Score.cpf -> encryp/decrypt on database
-openapi
-limpar build.fsx
-review README
-connection pool
-GET /scores/{cpf} not found returning null
-service should throw custom exception to be handled as 400 on controller
+database:
+- migration
+service:
+- sensitive data
+- add logging
+- add integration testing
+- add unit testing
+- Score.cpf -> protected
+- Score.cpf -> add mod11 calc
+- Score.cpf -> encryp/decrypt on database
+- openapi
+- limpar build.fsx
+- review README
+- GET /scores/{cpf} not found returning null
+- service should throw custom exception to be handled as 400 on controller
 
 # Questions
 GET scores/{cpf}... should be a post?
 DI?
+connection pool
 tasks:
 - context insensitive
-- let, let!, do, do!, return, return!
 
 # Opinions
 + Concurrency

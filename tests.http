@@ -17,7 +17,7 @@ Accept: application/json
 
 ###
 
-GET /scores/1
+GET /scores/99999999999
 Host: localhost:5000
 Authorization: abcd1234
 Accept: application/json
@@ -30,7 +30,7 @@ Authorization: abcd1234
 Accept: application/json
 
 {
-    "cpf": "1"
+    "cpf": "999.999.999-99"
 }
 
 ###

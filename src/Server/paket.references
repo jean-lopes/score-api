@@ -1,3 +1,2 @@
 Saturn
-Dapper
-Microsoft.Data.Sqlite
+Npgsql.FSharp

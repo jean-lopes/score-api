@@ -6,8 +6,6 @@ framework: netcoreapp3.1
 nuget Npgsql.FSharp
 nuget Saturn == 0.14.1
 nuget Simple.Migrations
-nuget Microsoft.Data.Sqlite
-nuget Dapper
 
 // [ FAKE GROUP ]
 group Build

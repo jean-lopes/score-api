@@ -1,35 +1,8 @@
 module Application.Server
 
-open System
 open Saturn
 open Application.Configurations
 open Application.Api
-open Microsoft.Extensions.DependencyInjection
-open Domain.Services
-open Resources.Repositories
-open Resources.Services
-open Newtonsoft.Json
-open Newtonsoft.Json.Serialization
-
-let configureServices (cfg: Configuration) (services: IServiceCollection) =
-    let scoreBounds = cfg.Service.ScoreBounds
-
-    let scoreProvider =
-        RandomScoreProvider(Random(), scoreBounds.Min, scoreBounds.Max)
-
-    let scoreRepository = InMemoryScoreRepository()
-
-    let scoreService =
-        ScoreService(scoreProvider, scoreRepository)
-
-    services.AddSingleton<ScoreService>(scoreService)
-
-let jsonSettings =
-    let settings = JsonSerializerSettings()
-    let resolver = DefaultContractResolver()
-    resolver.NamingStrategy <- SnakeCaseNamingStrategy()
-    settings.ContractResolver <- resolver
-    settings
 
 let app (cfg: Configuration) =
     let serverUrl =
@@ -41,8 +14,8 @@ let app (cfg: Configuration) =
         use_router Routers.api
         url serverUrl
         use_config (fun _ -> cfg)
-        service_config (configureServices cfg)
-        use_json_settings jsonSettings
+        service_config (Services.configure cfg)
+        use_json_settings Json.settings
     }
 
 [<EntryPoint>]

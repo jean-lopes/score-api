@@ -22,9 +22,12 @@ type ScoreService(scoreProvider: IScoreProvider, repository: IScoreRepository) =
                       Value = scoreProvider.score cpf
                       CreatedAt = DateTime.UtcNow }
 
-                repository.insert score |> ignore
+                let! result = repository.insert score
 
-                return Ok score
+                return
+                    match result with
+                    | Ok _ -> Ok score
+                    | Error ex -> Error ex
         }
 
     member _.getByCpf(rawCpf: string) : Task<Result<Score option, exn>> =

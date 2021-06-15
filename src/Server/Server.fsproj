@@ -14,6 +14,8 @@
     <Compile Include="Resources/Services.fs" />
     <Compile Include="Application/Configurations/VariableNames.fs" />
     <Compile Include="Application/Configurations/Configurations.fs" />
+    <Compile Include="Application/Configurations/Json.fs" />
+    <Compile Include="Application/Configurations/Services.fs" />
     <Compile Include="Application/Api/Dtos.fs" />
     <Compile Include="Application/Api/Handlers.fs" />
     <Compile Include="Application/Api/Authorization.fs" />

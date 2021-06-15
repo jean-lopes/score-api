@@ -1,17 +1,13 @@
 namespace Application.Configurations
 
-open System.IO
-open Commons.Extensions
 open System
+open System.IO
+open Npgsql.FSharp
+open Commons.Extensions
 
 [<AutoOpen>]
 module Configurations =
-    type Database =
-        { Host: string
-          Port: int
-          User: string
-          Password: string
-          Name: string }
+    type Database = { ConnectionString: string }
 
     [<Struct>]
     type ScoreBounds =
@@ -23,7 +19,6 @@ module Configurations =
             then
                 if max < min then
                     failwithf "Invalid score bounds, max < min. Min: %d, Max: %d" min max
-
 
     type Service =
         { Port: int
@@ -62,7 +57,6 @@ module Configurations =
         VariableNames.asSeq
         |> Seq.choose getEnv
         |> Map.ofSeq
-
 
     let private loadFromFilesAndEnv (paths: seq<string>) =
         let fromEnv = loadEnvs
@@ -115,8 +109,10 @@ module Configurations =
 
                     new ScoreBounds(min, max) }
           Database =
-              { Host = getStr VariableNames.Database.host
-                Port = getInt VariableNames.Database.port
-                User = getStr VariableNames.Database.user
-                Password = getStr VariableNames.Database.password
-                Name = getStr VariableNames.Database.name } }
+              { ConnectionString =
+                    Sql.host (getStr VariableNames.Database.host)
+                    |> Sql.database (getStr VariableNames.Database.name)
+                    |> Sql.username (getStr VariableNames.Database.user)
+                    |> Sql.password (getStr VariableNames.Database.password)
+                    |> Sql.port (getInt VariableNames.Database.port)
+                    |> Sql.formatConnectionString } }
