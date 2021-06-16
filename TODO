@@ -23,6 +23,8 @@ tasks:
 
 # Opinions
 + Concurrency
+~ opinionated 
+- framework
 - forward declarations
 - records,classes,modules case
 - documentation
