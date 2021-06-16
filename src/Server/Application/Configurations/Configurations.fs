@@ -58,7 +58,7 @@ module Configurations =
         |> Seq.choose getEnv
         |> Map.ofSeq
 
-    let private loadFromFilesAndEnv (paths: seq<string>) =
+    let private loadFromFilesAndEnv (paths: seq<string>) : Map<string, string> =
         let fromEnv = loadEnvs
         let fromFiles = loadFromFiles paths
         Map.merge fromFiles fromEnv
@@ -84,6 +84,31 @@ module Configurations =
             | true, value -> value
             | _ -> failwithf "Expected variable `%s` to be a bool, found: `%s`" name s
 
+    type private ConfigurationReader(variables: Map<string, string>) =
+        member _.GetStr(name: string) = getStrFromMap name variables
+        member _.GetInt(name: string) = getIntFromMap name variables
+        member _.GetBool(name: string) = getBoolFromMap name variables
+
+    let private loadDatabaseFromMap (map: Map<string, string>) : Database =
+        let reader = ConfigurationReader(map)
+
+        { ConnectionString =
+              Sql.host (reader.GetStr VariableNames.Database.host)
+              |> Sql.database (reader.GetStr VariableNames.Database.name)
+              |> Sql.username (reader.GetStr VariableNames.Database.user)
+              |> Sql.password (reader.GetStr VariableNames.Database.password)
+              |> Sql.port (reader.GetInt VariableNames.Database.port)
+              |> Sql.formatConnectionString }
+
+    /// Load variables from files and system environment.
+    ///
+    /// Load order: paths (by sequence order), then Environment Variables
+    ///
+    /// Last read value is kept as the current value
+    let buildDatabaseConfig (paths: seq<string>) : Database =
+        let envs = loadFromFilesAndEnv paths
+        loadDatabaseFromMap envs
+
     /// Load variables from files and system environment.
     ///
     /// Load order: paths (by sequence order), then Environment Variables
@@ -91,28 +116,19 @@ module Configurations =
     /// Last read value is kept as the current value
     let buildFromFilesAndEnv paths =
         let envs = loadFromFilesAndEnv paths
-        let getStr name = getStrFromMap name envs
-        let getInt name = getIntFromMap name envs
-        let getBool name = getBoolFromMap name envs
+        let reader = ConfigurationReader(envs)
 
         { Service =
-              { Port = getInt VariableNames.Service.port
-                Secret = getStr VariableNames.Service.secret
-                Key = getStr VariableNames.Service.key
-                UnauthorizedAsNotFound = getBool VariableNames.Service.unauthorizedAsNotFound
+              { Port = reader.GetInt VariableNames.Service.port
+                Secret = reader.GetStr VariableNames.Service.secret
+                Key = reader.GetStr VariableNames.Service.key
+                UnauthorizedAsNotFound = reader.GetBool VariableNames.Service.unauthorizedAsNotFound
                 ScoreBounds =
                     let min =
-                        getInt VariableNames.Service.minScoreBound
+                        reader.GetInt VariableNames.Service.minScoreBound
 
                     let max =
-                        getInt VariableNames.Service.maxScoreBound
+                        reader.GetInt VariableNames.Service.maxScoreBound
 
                     new ScoreBounds(min, max) }
-          Database =
-              { ConnectionString =
-                    Sql.host (getStr VariableNames.Database.host)
-                    |> Sql.database (getStr VariableNames.Database.name)
-                    |> Sql.username (getStr VariableNames.Database.user)
-                    |> Sql.password (getStr VariableNames.Database.password)
-                    |> Sql.port (getInt VariableNames.Database.port)
-                    |> Sql.formatConnectionString } }
+          Database = loadDatabaseFromMap envs }
