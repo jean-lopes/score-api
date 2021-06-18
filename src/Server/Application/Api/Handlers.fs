@@ -1,5 +1,6 @@
 namespace Application.Api
 
+[<RequireQualifiedAccessAttribute>]
 module Handlers =
     open System.Threading.Tasks
     open FSharp.Control.Tasks
@@ -17,6 +18,6 @@ module Handlers =
             set_status_code 500
 
             json
-                { message = "Uncaught exception"
-                  cause = ex }
+                { Message = "Uncaught exception"
+                  Cause = ex }
         }

@@ -3,20 +3,20 @@ namespace Domain.Helpers
 [<RequireQualifiedAccessAttribute>]
 module Cpf =
     open System
+    open System.Text.RegularExpressions
     open Domain.Entities
+
+    [<Literal>]
+    let private cpfPattern = @"^(\d{11}|\d{3}\.\d{3}\.\d{3}\-\d{2})$"
 
     let format (cpf: CPF) : string = cpf.ToString("000\.000\.000\-00")
 
-    let private clean (cpf: string) : string =
-        String.filter Char.IsDigit cpf
-        |> fun s -> s.PadLeft(11, '0')
+    let tryParse (rawCpf: string) : Result<CPF, string> =
+        let digits : string -> string = String.filter (fun c -> Char.IsDigit c)
 
-    let tryParse (cpf: string) : Result<CPF, string> =
-        let isDigitOnly : string -> bool = String.forall (fun c -> Char.IsDigit c)
-        let invalid msg = Error(sprintf "%s. CPF: %s" msg cpf)
+        let cpf = rawCpf.Trim()
 
-        // TODO Maybe mod11 validation?
-        match clean cpf with
-        | s when s.Length <> 11 -> invalid "Invalid length. Expected 11"
-        | s when isDigitOnly s |> not -> invalid "CPF should contain only numbers"
-        | s -> Ok(uint64 s)
+        if Regex.IsMatch(cpf, cpfPattern) then
+            Ok(uint64 <| digits cpf)
+        else
+            Error "Invalid CPF"

@@ -64,6 +64,6 @@ Target.create
 
 "Clean" ==> "Restore" ==> "Build"
 
-"Clean" ==> "Restore" ==> "Migrate" ==> "Run"
+"Clean" ==> "Restore" ==> "Run"
 
 Target.runOrDefault "Build"

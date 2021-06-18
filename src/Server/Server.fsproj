@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Commons/Extensions.fs" />
-    <Compile Include="Domain/Errors.fs" />
     <Compile Include="Domain/Entities.fs" />
     <Compile Include="Domain/Helpers.fs" />
     <Compile Include="Domain/Repositories.fs" />

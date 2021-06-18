@@ -1,28 +1,4 @@
-GET /
-Host: localhost:5000
-Content-Type: application/json
-###
-
-GET /abc
-Host: localhost:5000
-Authorization: abcd1234
-Content-Type: application/json
-
-###
-
-GET /scores
-Host: localhost:5000
-Authorization: abcd1234
-Accept: application/json
-
-###
-
-GET /scores/99999999999
-Host: localhost:5000
-Authorization: abcd1234
-Accept: application/json
-
-###
+### 200
 
 POST /scores
 Host: localhost:5000
@@ -30,17 +6,83 @@ Authorization: abcd1234
 Accept: application/json
 
 {
-    "cpf": "999.999.999-99"
+    "cpf": "123.456.789-12"
 }
 
-###
+### 422 (length)
+
+GET /scores/99999999999
+Host: localhost:5000
+Authorization: abcd1234
+Accept: application/json
+
+### 404
+
+GET /
+Host: localhost:5000
+Content-Type: application/json
+
+### 404
+
+GET /abc
+Host: localhost:5000
+Authorization: abcd1234
+Content-Type: application/json
+### 404
+
+GET /scores
+Host: localhost:5000
+Authorization: abcd1234
+Accept: application/json
+
+### 422 (length)
+
+GET /scores/065.591.569-90
+Host: localhost:5000
+Authorization: abcd1234
+Accept: application/json
+
+### 422 (length)
+
+POST /scores
+Host: localhost:5000
+Authorization: abcd1234
+Accept: application/json
+
+{
+    "cpf": "1"
+}
+
+### 422 (letter)
+
+POST /scores
+Host: localhost:5000
+Authorization: abcd1234
+Accept: application/json
+
+{
+    "cpf": "0000000000a"
+}
+
+### 400
+
+POST /scores
+Host: localhost:5000
+Authorization: abcd1234
+Accept: application/json
+
+{
+    "cpf""999.999.999-99"
+}
+
+### 401
 
 GET /scores/1
 Host: localhost:5000
 Authorization: abcd1
 Accept: application/json
 
-###
+### 401
 
 GET /scores/1
 Host: localhost:5000

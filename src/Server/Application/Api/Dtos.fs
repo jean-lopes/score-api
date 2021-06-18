@@ -5,9 +5,11 @@ module Dtos =
     open System
     open Domain.Entities
 
-    type Error = { message: string; cause: exn }
+    type ErrorResponse = { Message: string; Cause: exn }
 
-    type ScoreRequest = { cpf: string }
+    type BadRequestResonse = { Message: string }
+
+    type ScoreRequest = { Cpf: string }
 
     type ScoreResponse = { Score: int; CreatedAt: DateTime }
 
