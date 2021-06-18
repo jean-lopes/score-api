@@ -11,7 +11,7 @@ Accept: application/json
 
 ### 422 (length)
 
-GET /scores/99999999999
+GET /scores/123.456.789-12
 Host: localhost:5000
 Authorization: abcd1234
 Accept: application/json
@@ -37,7 +37,7 @@ Accept: application/json
 
 ### 422 (length)
 
-GET /scores/065.591.569-90
+GET /scores/065.591.569-902
 Host: localhost:5000
 Authorization: abcd1234
 Accept: application/json

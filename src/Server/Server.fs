@@ -1,17 +1,30 @@
-module Application.Server
+module Server
 
 open Saturn
-open Application.Configurations
-open Application.Api
+open Config
+open Application
+
+let apiRouter =
+    router {
+        not_found_handler (fun _ -> Handlers.empty 404)
+        forward "/scores" ScoresController.resource
+    }
+
+let apiPipeline cfg =
+    pipeline {
+        plug acceptJson
+        plug requestId
+        plug (requiresAuthorization cfg cfg.Service.Secret)
+    }
 
 let app (cfg: Configuration) =
     let serverUrl =
         sprintf "http://0.0.0.0:%d" cfg.Service.Port
 
     application {
-        pipe_through (Pipelines.api cfg)
+        pipe_through (apiPipeline cfg)
         error_handler Handlers.errorHandler
-        use_router Routers.api
+        use_router apiRouter
         url serverUrl
         use_config (fun _ -> cfg)
         service_config (Services.configure cfg)

@@ -1,35 +1,75 @@
-namespace Application.Configurations
+namespace Config
 
 open System
-open System.IO
-open Npgsql.FSharp
-open Commons.Extensions
+
+type Database = { ConnectionString: string }
+
+[<Struct>]
+type ScoreBounds =
+    val Min: int
+    val Max: int
+
+    new(min, max) =
+        { Min = min; Max = max }
+        then
+            if max < min then
+                failwithf "Invalid score bounds, max < min. Min: %d, Max: %d" min max
+
+type Service =
+    { Port: int
+      Secret: string
+      Key: string
+      UnauthorizedAsNotFound: bool
+      ScoreBounds: ScoreBounds }
+
+type Configuration =
+    { Service: Service
+      Database: Database }
+
+[<RequireQualifiedAccessAttribute>]
+module private VariableNames =
+    [<RequireQualifiedAccessAttribute>]
+    module Database =
+        let host = "POSTGRES_HOST"
+        let port = "POSTGRES_PORT"
+        let user = "POSTGRES_USER"
+        let password = "POSTGRES_PASSWORD"
+        let name = "POSTGRES_DB"
+
+        let asSeq =
+            seq {
+                host
+                port
+                user
+                password
+                name
+            }
+
+    [<RequireQualifiedAccessAttribute>]
+    module Service =
+        let port = "SERVICE_PORT"
+        let secret = "SERVICE_SECRET"
+        let key = "SERVICE_KEY"
+        let unauthorizedAsNotFound = "SERVICE_UNAUTHORIZED_AS_NOT_FOUND"
+        let minScoreBound = "SERVICE_SCORE_BOUND_MIN"
+        let maxScoreBound = "SERVICE_SCORE_BOUND_MAX"
+
+        let asSeq =
+            seq {
+                port
+                secret
+                key
+                unauthorizedAsNotFound
+                minScoreBound
+                maxScoreBound
+            }
+
+    let asSeq = Seq.append Service.asSeq Database.asSeq
 
 [<AutoOpen>]
 module Configurations =
-    type Database = { ConnectionString: string }
-
-    [<Struct>]
-    type ScoreBounds =
-        val Min: int
-        val Max: int
-
-        new(min, max) =
-            { Min = min; Max = max }
-            then
-                if max < min then
-                    failwithf "Invalid score bounds, max < min. Min: %d, Max: %d" min max
-
-    type Service =
-        { Port: int
-          Secret: string
-          Key: string
-          UnauthorizedAsNotFound: bool
-          ScoreBounds: ScoreBounds }
-
-    type Configuration =
-        { Service: Service
-          Database: Database }
+    open System.IO
+    open Npgsql.FSharp
 
     let private strVarToTuple (s: string) =
         match s.Split("=") with
@@ -42,11 +82,14 @@ module Configurations =
         |> Seq.choose strVarToTuple
         |> Map.ofSeq
 
+    let private merge m1 m2 : Map<'a, 'b> =
+        Map.fold (fun s k v -> Map.add k v s) m1 m2
+
     let private loadFromFiles (paths: seq<string>) =
         paths
         |> Seq.filter File.Exists
         |> Seq.map loadFromFile
-        |> Seq.reduce (fun acc e -> Map.merge acc e)
+        |> Seq.reduce (fun acc e -> merge acc e)
 
     let private getEnv name =
         match Environment.GetEnvironmentVariable name with
@@ -61,7 +104,7 @@ module Configurations =
     let private loadFromFilesAndEnv (paths: seq<string>) : Map<string, string> =
         let fromEnv = loadEnvs
         let fromFiles = loadFromFiles paths
-        Map.merge fromFiles fromEnv
+        merge fromFiles fromEnv
 
     let private getStrFromMap name (map: Map<string, string>) : string =
         Map.tryFind name map
@@ -100,11 +143,6 @@ module Configurations =
               |> Sql.port (reader.GetInt VariableNames.Database.port)
               |> Sql.formatConnectionString }
 
-    /// Load variables from files and system environment.
-    ///
-    /// Load order: paths (by sequence order), then Environment Variables
-    ///
-    /// Last read value is kept as the current value
     let buildDatabaseConfig (paths: seq<string>) : Database =
         let envs = loadFromFilesAndEnv paths
         loadDatabaseFromMap envs
@@ -132,3 +170,35 @@ module Configurations =
 
                     new ScoreBounds(min, max) }
           Database = loadDatabaseFromMap envs }
+
+[<RequireQualifiedAccessAttribute>]
+module Json =
+    open Newtonsoft.Json
+    open Newtonsoft.Json.Serialization
+
+    let settings =
+        let s = JsonSerializerSettings()
+        let resolver = DefaultContractResolver()
+        resolver.NamingStrategy <- SnakeCaseNamingStrategy()
+        s.ContractResolver <- resolver
+        s
+
+[<RequireQualifiedAccessAttribute>]
+module Services =
+    open Microsoft.Extensions.DependencyInjection
+    open Domain.Services
+    open Infrastructure
+
+    let configure (cfg: Configuration) (services: IServiceCollection) =
+        let scoreBounds = cfg.Service.ScoreBounds
+
+        let scoreProvider =
+            RandomScoreProvider(Random(), scoreBounds.Min, scoreBounds.Max)
+
+        let scoreRepository =
+            PgSqlScoreRepository(cfg.Database.ConnectionString)
+
+        let scoreService =
+            ScoreService(scoreProvider, scoreRepository)
+
+        services.AddSingleton<ScoreService>(scoreService)

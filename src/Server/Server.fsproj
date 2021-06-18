@@ -4,14 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Commons/Extensions.fs" />
-    <Compile Include="Domain/Entities.fs" />
-    <Compile Include="Domain/Helpers.fs" />
-    <Compile Include="Domain/Repositories.fs" />
-    <Compile Include="Domain/Services.fs" />
-    <Compile Include="Resources/Repositories.fs" />
-    <Compile Include="Resources/Services.fs" />
-    <Compile Include="Application/Configurations/VariableNames.fs" />
+    <!-- <Compile Include="Application/Configurations/VariableNames.fs" />
     <Compile Include="Application/Configurations/Configurations.fs" />
     <Compile Include="Application/Configurations/Json.fs" />
     <Compile Include="Application/Configurations/Services.fs" />
@@ -21,7 +14,12 @@
     <Compile Include="Application/Api/Pipelines.fs" />
     <Compile Include="Application/Api/Controllers.fs" />
     <Compile Include="Application/Api/Routers.fs" />
-    <Compile Include="Application/Server.fs" />
+    -->
+    <Compile Include="Domain.fs" />
+    <Compile Include="Infrastructure.fs" />
+    <Compile Include="Config.fs" />
+    <Compile Include="Application.fs" />
+    <Compile Include="Server.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
