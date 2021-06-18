@@ -4,7 +4,15 @@ open System
 open System.Threading.Tasks
 open FSharp.Control.Tasks.ContextInsensitive
 
-type CPF = uint64
+[<Struct>]
+[<StructuralEquality; StructuralComparison>]
+type Redacted<'T>(raw: 'T) =
+    member _.Raw = raw
+    override _.ToString() = "REDACTED"
+
+and 'T redacted = Redacted<'T>
+
+type CPF = uint64 redacted
 
 type Score =
     { Id: Guid
@@ -21,9 +29,7 @@ module private Cpf =
     open System.Text.RegularExpressions
 
     [<Literal>]
-    let private cpfPattern = @"^(\d{11}|\d{3}\.\d{3}\.\d{3}\-\d{2})$"
-
-    let format (cpf: CPF) : string = cpf.ToString("000\.000\.000\-00")
+    let cpfPattern = @"^(\d{11}|\d{3}\.\d{3}\.\d{3}\-\d{2})$"
 
     let tryParse (rawCpf: string) : Result<CPF, string> =
         let digits : string -> string = String.filter (fun c -> Char.IsDigit c)
@@ -31,7 +37,7 @@ module private Cpf =
         let cpf = rawCpf.Trim()
 
         if Regex.IsMatch(cpf, cpfPattern) then
-            Ok(uint64 <| digits cpf)
+            Ok(redacted (uint64 <| digits cpf))
         else
             Error "Invalid CPF"
 

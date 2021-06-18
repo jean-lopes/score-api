@@ -49,16 +49,17 @@ type RandomScoreProvider(rnd: Random, min: int, max: int) =
         member _.score _ = rnd.Next(min, max + 1)
 
 type InMemoryScoreRepository() =
-    let mutable scores : Map<CPF, Score> = Map.empty
+    let mutable scores : Map<uint64, Score> = Map.empty
 
     interface IScoreRepository with
         member _.insert(score: Score) : Task<Result<int, exn>> =
             task {
-                scores <- scores.Add(score.Cpf, score)
+                scores <- scores.Add(score.Cpf.Raw, score)
                 return (Ok 1)
             }
 
-        member _.findByCpf(cpf: CPF) : Task<Result<Score option, exn>> = task { return Ok(scores.TryFind cpf) }
+        member _.findByCpf(cpf: CPF) : Task<Result<Score option, exn>> =
+            task { return Ok(scores.TryFind cpf.Raw) }
 
 type PgSqlScoreRepository(connectionString: string, encryption: Encryption) =
     let insertAsync score =
@@ -66,7 +67,7 @@ type PgSqlScoreRepository(connectionString: string, encryption: Encryption) =
         |> Sql.connect
         |> Sql.query "INSERT INTO scores (id, cpf, value, created_at) VALUES(@id, @cpf, @value, @created_at)"
         |> Sql.parameters [ "@id", Sql.uuid score.Id
-                            "@cpf", Sql.string (encryption.encrypt (score.Cpf.ToString()))
+                            "@cpf", Sql.string (encryption.encrypt (score.Cpf.Raw.ToString()))
                             "@value", Sql.int score.Value
                             "@created_at", Sql.timestamptz score.CreatedAt ]
         |> Sql.executeNonQueryAsync
@@ -87,11 +88,11 @@ type PgSqlScoreRepository(connectionString: string, encryption: Encryption) =
         connectionString
         |> Sql.connect
         |> Sql.query findByCpfQuery
-        |> Sql.parameters [ "@cpf", Sql.string (encryption.encrypt (cpf.ToString())) ]
+        |> Sql.parameters [ "@cpf", Sql.string (encryption.encrypt (cpf.Raw.ToString())) ]
         |> Sql.executeAsync
             (fun read ->
                 { Id = read.uuid "id"
-                  Cpf = uint64 (encryption.decrypt (read.string "cpf"))
+                  Cpf = redacted (uint64 (encryption.decrypt (read.string "cpf")))
                   Value = read.int "value"
                   CreatedAt = read.dateTime "created_at" })
 

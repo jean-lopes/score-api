@@ -1,11 +1,8 @@
 service:
-- sensitive data
 - add logging
 - add integration testing
 - add unit testing
-- Score.cpf -> protected
 - Score.cpf -> add mod11 calc
-- Score.cpf -> encryp/decrypt on database
 - openapi
 - review README
 - GET /scores/{cpf} not found returning null
