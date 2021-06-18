@@ -1,12 +1,48 @@
 namespace Infrastructure
 
 open System
+open System.IO
 open System.Threading.Tasks
+open System.Security.Cryptography
+open System.Text
 open FSharp.Control.Tasks.ContextInsensitive
 open Npgsql.FSharp
 open Domain
 open Domain.Repositories
 open Domain.Services
+
+type Encryption(key: byte array) =
+    member _.encrypt(value: string) =
+        use aes = Aes.Create()
+        aes.Key <- key
+        aes.IV <- key
+
+        printfn "%s" (Convert.ToBase64String(aes.Key))
+
+        let valueBytes = ASCIIEncoding.UTF8.GetBytes(value)
+
+        use encryptor = aes.CreateEncryptor(aes.Key, aes.IV)
+
+        let encrypted =
+            encryptor.TransformFinalBlock(valueBytes, 0, valueBytes.Length)
+
+        Convert.ToBase64String(encrypted)
+
+
+    member _.decrypt(encrypted: string) : string =
+        use aes = Aes.Create()
+        aes.Key <- key
+        aes.IV <- key
+
+        let value = Convert.FromBase64String(encrypted)
+
+        use decryptor = aes.CreateDecryptor(aes.Key, aes.IV)
+
+        let result =
+            decryptor.TransformFinalBlock(value, 0, value.Length)
+
+        ASCIIEncoding.UTF8.GetString(result)
+
 
 type RandomScoreProvider(rnd: Random, min: int, max: int) =
     interface IScoreProvider with
@@ -24,13 +60,13 @@ type InMemoryScoreRepository() =
 
         member _.findByCpf(cpf: CPF) : Task<Result<Score option, exn>> = task { return Ok(scores.TryFind cpf) }
 
-type PgSqlScoreRepository(connectionString: string) =
+type PgSqlScoreRepository(connectionString: string, encryption: Encryption) =
     let insertAsync score =
         connectionString
         |> Sql.connect
         |> Sql.query "INSERT INTO scores (id, cpf, value, created_at) VALUES(@id, @cpf, @value, @created_at)"
         |> Sql.parameters [ "@id", Sql.uuid score.Id
-                            "@cpf", Sql.int64 (int64 score.Cpf)
+                            "@cpf", Sql.string (encryption.encrypt (score.Cpf.ToString()))
                             "@value", Sql.int score.Value
                             "@created_at", Sql.timestamptz score.CreatedAt ]
         |> Sql.executeNonQueryAsync
@@ -47,15 +83,15 @@ type PgSqlScoreRepository(connectionString: string) =
              LIMIT 1
         """
 
-    let findByCpfAsync cpf =
+    let findByCpfAsync (cpf: CPF) =
         connectionString
         |> Sql.connect
         |> Sql.query findByCpfQuery
-        |> Sql.parameters [ "@cpf", Sql.int64 (int64 cpf) ]
+        |> Sql.parameters [ "@cpf", Sql.string (encryption.encrypt (cpf.ToString())) ]
         |> Sql.executeAsync
             (fun read ->
                 { Id = read.uuid "id"
-                  Cpf = uint64 (read.int64 "cpf")
+                  Cpf = uint64 (encryption.decrypt (read.string "cpf"))
                   Value = read.int "value"
                   CreatedAt = read.dateTime "created_at" })
 

@@ -5,7 +5,7 @@ open SimpleMigrations
 open SimpleMigrations.DatabaseProvider
 open SimpleMigrations.Console
 open Npgsql
-open Application.Configurations
+open Config
 
 [<EntryPoint>]
 let main argv =

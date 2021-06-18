@@ -11,7 +11,7 @@ type CreateScore() =
             """
                 CREATE TABLE scores(
                 	id UUID NOT NULL PRIMARY KEY,
-                	cpf BIGINT NOT NULL,
+                	cpf VARCHAR(32) NOT NULL,
                 	value INT NOT NULL,
                 	created_at TIMESTAMPTZ NOT NULL
                 );

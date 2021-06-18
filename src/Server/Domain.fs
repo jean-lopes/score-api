@@ -2,6 +2,7 @@ namespace Domain
 
 open System
 open System.Threading.Tasks
+open FSharp.Control.Tasks.ContextInsensitive
 
 type CPF = uint64
 
@@ -40,7 +41,6 @@ module Repositories =
         abstract findByCpf : cpf: CPF -> Task<Result<Score option, exn>>
 
 module Services =
-    open FSharp.Control.Tasks.ContextInsensitive
     open Repositories
 
     type IScoreProvider =

@@ -9,7 +9,7 @@ Accept: application/json
     "cpf": "123.456.789-12"
 }
 
-### 422 (length)
+### 200
 
 GET /scores/123.456.789-12
 Host: localhost:5000

@@ -185,18 +185,32 @@ module Json =
 
 [<RequireQualifiedAccessAttribute>]
 module Services =
+    open System.Text
+    open System.Security.Cryptography
     open Microsoft.Extensions.DependencyInjection
     open Domain.Services
     open Infrastructure
 
+    let encryption cfg =
+        use md5 = MD5.Create()
+
+
+        let keyBytes =
+            ASCIIEncoding.UTF8.GetBytes(cfg.Service.Key)
+
+        let hashedKey = md5.ComputeHash(keyBytes)
+
+        Encryption(hashedKey)
+
     let configure (cfg: Configuration) (services: IServiceCollection) =
+        printfn "configure"
         let scoreBounds = cfg.Service.ScoreBounds
 
         let scoreProvider =
             RandomScoreProvider(Random(), scoreBounds.Min, scoreBounds.Max)
 
         let scoreRepository =
-            PgSqlScoreRepository(cfg.Database.ConnectionString)
+            PgSqlScoreRepository(cfg.Database.ConnectionString, encryption cfg)
 
         let scoreService =
             ScoreService(scoreProvider, scoreRepository)
