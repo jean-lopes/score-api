@@ -1,5 +1,6 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-alpine AS build
 COPY . .
+RUN dotnet tool restore
 RUN dotnet restore
 RUN dotnet publish Score.sln -c release -o /app --no-self-contained --no-restore
 
