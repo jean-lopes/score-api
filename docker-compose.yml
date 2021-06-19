@@ -16,6 +16,7 @@ services:
     build:
       context: .
       target: score-migration
+    restart: on-failure
     env_file:
     - envs/dev.env
     networks:
