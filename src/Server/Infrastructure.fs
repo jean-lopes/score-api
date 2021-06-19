@@ -17,8 +17,6 @@ type Encryption(key: byte array) =
         aes.Key <- key
         aes.IV <- key
 
-        printfn "%s" (Convert.ToBase64String(aes.Key))
-
         let valueBytes = ASCIIEncoding.UTF8.GetBytes(value)
 
         use encryptor = aes.CreateEncryptor(aes.Key, aes.IV)

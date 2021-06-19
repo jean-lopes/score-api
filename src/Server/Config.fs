@@ -1,6 +1,12 @@
 namespace Config
 
 open System
+open System.Text
+open System.Security.Cryptography
+open Microsoft.Extensions.DependencyInjection
+open Npgsql.FSharp
+open Domain.Services
+open Infrastructure
 
 type Database = { ConnectionString: string }
 
@@ -66,31 +72,8 @@ module private VariableNames =
 
     let asSeq = Seq.append Service.asSeq Database.asSeq
 
-[<AutoOpen>]
+[<RequireQualifiedAccess>]
 module Configurations =
-    open System.IO
-    open Npgsql.FSharp
-
-    let private strVarToTuple (s: string) =
-        match s.Split("=") with
-        | [| name; value |] -> Some(name, value)
-        | _ -> None
-
-    let private loadFromFile (path: string) =
-        File.ReadAllLines(path)
-        |> Seq.cast<string>
-        |> Seq.choose strVarToTuple
-        |> Map.ofSeq
-
-    let private merge m1 m2 : Map<'a, 'b> =
-        Map.fold (fun s k v -> Map.add k v s) m1 m2
-
-    let private loadFromFiles (paths: seq<string>) =
-        paths
-        |> Seq.filter File.Exists
-        |> Seq.map loadFromFile
-        |> Seq.reduce (fun acc e -> merge acc e)
-
     let private getEnv name =
         match Environment.GetEnvironmentVariable name with
         | null -> None
@@ -100,11 +83,6 @@ module Configurations =
         VariableNames.asSeq
         |> Seq.choose getEnv
         |> Map.ofSeq
-
-    let private loadFromFilesAndEnv (paths: seq<string>) : Map<string, string> =
-        let fromEnv = loadEnvs
-        let fromFiles = loadFromFiles paths
-        merge fromFiles fromEnv
 
     let private getStrFromMap name (map: Map<string, string>) : string =
         Map.tryFind name map
@@ -132,28 +110,8 @@ module Configurations =
         member _.GetInt(name: string) = getIntFromMap name variables
         member _.GetBool(name: string) = getBoolFromMap name variables
 
-    let private loadDatabaseFromMap (map: Map<string, string>) : Database =
-        let reader = ConfigurationReader(map)
-
-        { ConnectionString =
-              Sql.host (reader.GetStr VariableNames.Database.host)
-              |> Sql.database (reader.GetStr VariableNames.Database.name)
-              |> Sql.username (reader.GetStr VariableNames.Database.user)
-              |> Sql.password (reader.GetStr VariableNames.Database.password)
-              |> Sql.port (reader.GetInt VariableNames.Database.port)
-              |> Sql.formatConnectionString }
-
-    let buildDatabaseConfig (paths: seq<string>) : Database =
-        let envs = loadFromFilesAndEnv paths
-        loadDatabaseFromMap envs
-
-    /// Load variables from files and system environment.
-    ///
-    /// Load order: paths (by sequence order), then Environment Variables
-    ///
-    /// Last read value is kept as the current value
-    let buildFromFilesAndEnv paths =
-        let envs = loadFromFilesAndEnv paths
+    let fromEnv =
+        let envs = loadEnvs
         let reader = ConfigurationReader(envs)
 
         { Service =
@@ -169,7 +127,14 @@ module Configurations =
                         reader.GetInt VariableNames.Service.maxScoreBound
 
                     new ScoreBounds(min, max) }
-          Database = loadDatabaseFromMap envs }
+          Database =
+              { ConnectionString =
+                    Sql.host (reader.GetStr VariableNames.Database.host)
+                    |> Sql.database (reader.GetStr VariableNames.Database.name)
+                    |> Sql.username (reader.GetStr VariableNames.Database.user)
+                    |> Sql.password (reader.GetStr VariableNames.Database.password)
+                    |> Sql.port (reader.GetInt VariableNames.Database.port)
+                    |> Sql.formatConnectionString } }
 
 [<RequireQualifiedAccessAttribute>]
 module Json =
@@ -185,15 +150,8 @@ module Json =
 
 [<RequireQualifiedAccessAttribute>]
 module Services =
-    open System.Text
-    open System.Security.Cryptography
-    open Microsoft.Extensions.DependencyInjection
-    open Domain.Services
-    open Infrastructure
-
     let encryption cfg =
         use md5 = MD5.Create()
-
 
         let keyBytes =
             ASCIIEncoding.UTF8.GetBytes(cfg.Service.Key)

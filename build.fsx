@@ -5,8 +5,6 @@ open Fake.Core.TargetOperators
 open Fake.DotNet
 open Fake.IO
 
-let databaseEnvPath = "database.env" |> Path.getFullName
-
 let srcPath = "./src/"
 
 let migrationPath =
@@ -32,38 +30,49 @@ Target.create
 Target.create
     "Build"
     (fun _ ->
-        DotNet.restore id migrationProjectPath
+        DotNet.build id migrationProjectPath
         DotNet.build id appProjectPath)
+
+Target.create
+    "Env"
+    (fun ps ->
+        let envFile =
+            Option.defaultValue "envs/local.env" (List.tryHead ps.Context.Arguments)
+
+        let strVarToTuple (s: string) =
+            match s.Split('=') with
+            | [| name; value |] -> Some(name, value)
+            | _ -> None
+
+        let setEnv (k, v) = Environment.setEnvironVar k v
+
+        envFile
+        |> Path.getFullName
+        |> System.IO.File.ReadAllLines
+        |> Array.choose strVarToTuple
+        |> Array.iter setEnv)
 
 Target.create
     "Migrate"
     (fun _ ->
-        Environment.setEnvironVar "TEST_FAKE" "abcd1234"
-
         DotNet.exec
             (fun p ->
                 { p with
                       WorkingDirectory = migrationPath })
             "run"
-            databaseEnvPath
+            ""
         |> ignore)
 
 Target.create
     "Run"
     (fun _ ->
-        let server =
-            async {
-                DotNet.exec (fun p -> { p with WorkingDirectory = appPath }) "watch" "run"
-                |> ignore
-            }
-
-        [ server ]
-        |> Async.Parallel
-        |> Async.RunSynchronously
+        DotNet.exec (fun p -> { p with WorkingDirectory = appPath }) "watch" "run"
         |> ignore)
 
 "Clean" ==> "Restore" ==> "Build"
 
-"Clean" ==> "Restore" ==> "Run"
+"Clean" ==> "Restore" ==> "Env" ==> "Migrate"
 
-Target.runOrDefault "Build"
+"Clean" ==> "Restore" ==> "Env" ==> "Run"
+
+Target.runOrDefaultWithArguments "Build"

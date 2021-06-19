@@ -4,18 +4,41 @@ services:
     image: postgres
     restart: always
     env_file:
-    - database.env
+    - envs/dev.env
     ports:
     - 5432:5432
     volumes:
     - database-data:/var/lib/postgresql/data/
+    networks:
+    - score-network
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-    - 8080:8080
+  migration:
+    build:
+      context: .
+      target: score-migration
+    env_file:
+    - envs/dev.env
+    networks:
+    - score-network
     depends_on: 
     - db
+
+  server:
+    build:
+      context: .
+      target: score-server
+    env_file:
+    - envs/dev.env
+    ports:
+    - 5000:5000
+    networks:
+    - score-network
+    depends_on:
+    - migration
+
 volumes:
   database-data:
+
+networks:
+  score-network:
+    driver: bridge

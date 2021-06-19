@@ -33,17 +33,12 @@ let app (cfg: Configuration) =
     }
 
 [<EntryPoint>]
-let main _ =
+let main args =
     printfn "Working directory - %s" (System.IO.Directory.GetCurrentDirectory())
 
-    let paths =
-        seq {
-            "../../database.env"
-            "../../service.env"
-        }
+    printfn "Loading configurations from env"
 
-    printfn "Loading configuration"
-    let cfg = buildFromFilesAndEnv paths
+    let cfg = Configurations.fromEnv
 
     printfn "Starting server"
     run (app cfg)

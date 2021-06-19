@@ -8,11 +8,11 @@ open Npgsql
 open Config
 
 [<EntryPoint>]
-let main argv =
-    let config = Seq.ofArray argv |> buildDatabaseConfig
+let main _ =
+    let config = Configurations.fromEnv
 
     use connection =
-        new NpgsqlConnection(config.ConnectionString)
+        new NpgsqlConnection(config.Database.ConnectionString)
 
     connection.Open()
 

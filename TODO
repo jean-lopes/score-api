@@ -6,6 +6,7 @@ service:
 - openapi
 - review README
 - GET /scores/{cpf} not found returning null
+- utc on response?
 
 # Questions
 GET scores/{cpf}... should be a post?
