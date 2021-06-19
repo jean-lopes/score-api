@@ -6,4 +6,7 @@
 6. Run `dotnet fake build -t run` to start application in watch mode (automatic recompilation and restart at file save)
 
 ### How to build application (docker-compose)
-TODO
+1. Make sure you have installed version of .Net SDK defined in `global.json`
+2. Run `dotnet tool restore` to restore all necessary tools
+3. Run `dotnet build -t build` 
+4. Run `docker compose up`
