@@ -8,5 +8,5 @@
 ### How to build application (docker-compose)
 1. Make sure you have installed version of .Net SDK defined in `global.json`
 2. Run `dotnet tool restore` to restore all necessary tools
-3. Run `dotnet build -t build` 
+3. Run `dotnet fake build -t build` 
 4. Run `docker compose up`
