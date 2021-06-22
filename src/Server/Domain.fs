@@ -32,7 +32,7 @@ module private Cpf =
     let cpfPattern = @"^(\d{11}|\d{3}\.\d{3}\.\d{3}\-\d{2})$"
 
     let tryParse (rawCpf: string) : Result<CPF, string> =
-        let digits : string -> string = String.filter (fun c -> Char.IsDigit c)
+        let digits : string -> string = String.filter Char.IsDigit
 
         let cpf = rawCpf.Trim()
 
