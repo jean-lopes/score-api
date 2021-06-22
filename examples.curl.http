@@ -1,0 +1,8 @@
+curl -X POST "localhost:5000/scores" \
+    -H "Authorization: abcd1234" \
+    -H "Accept: application/json" \
+    --data '{"cpf": "123.456.789-12"}' -v
+
+curl -X GET "localhost:5000/scores/123.456.789-12" \
+    -H "Authorization: abcd1234" \
+    -H "Accept: application/json" -v
